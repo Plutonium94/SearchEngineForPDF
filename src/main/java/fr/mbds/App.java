@@ -64,10 +64,8 @@ public class App {
 	        				String text = tStripper.getText(doc);
 	        				System.out.println("=====");
 	        				System.out.println(text);
-	        				if(once == null) {
-	        					once = file;
-	        					indexDoc(once, text);
-	        				}
+	        				
+							indexDoc(file, text);
 
 	        			}
 	        			doc.close();
@@ -76,7 +74,7 @@ public class App {
 	        	}
 
 	        });
-	        client.close();
+	        // client.close();
 	    } catch(IOException ioe) {
 	    	ioe.printStackTrace();
 	    }
