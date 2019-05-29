@@ -35,20 +35,13 @@ public class App {
 	}
 
 	public static void indexDoc(File file, String text) {
-		try {
-			IndexRequest req = new IndexRequest("cool","doc");
-			Map<String, Object> data = new HashMap<>();
-			data.put("filename",file.getName());
-			data.put("content", text);
-			req.source(data);
-			IndexResponse indexResp = client.index(req, RequestOptions.DEFAULT);
-			System.out.println("\n:::::::::::::::::::::::::");
-			System.out.println(indexResp);
-			System.out.println(":::::::::::::::::::::::::\n");
-			
-		} catch(IOException ioe ) {
-			ioe.printStackTrace();
-		}
+		IndexRequest req = new IndexRequest("cool","doc");
+		Map<String, Object> data = new HashMap<>();
+		data.put("filename",file.getName());
+		data.put("content", text);
+		req.source(data);
+		client.indexAsync(req, RequestOptions.DEFAULT, new IndexActionListener());		
+
 	}
 
     public static void main( String[] args ) {
