@@ -120,44 +120,60 @@ public class App {
 		pw.close();
 	}
 
-    public static void main( String[] args ) {
-    	try {
-	    	Path startPath = FileSystems.getDefault().getPath("..","gros_backup");
-	    	final BulkRequest bulkRequest = new BulkRequest();
-	        Files.walkFileTree(startPath, new SimpleFileVisitor<Path>() {
+	private static void launchDirectoryChooserFrame() throws IOException {
+		new DirectoryChooserFrame();
+	}
 
-	        	@Override
-	        	public FileVisitResult visitFile(Path filePath, BasicFileAttributes bfa) throws IOException{
-	        		File file = filePath.toFile();
-	        		if(filter.accept(file)) {
-	        			try {
-		        			PDDocument doc = PDDocument.load(file);
+	public static void indexPath(Path startPath) throws IOException {
+    	final BulkRequest bulkRequest = new BulkRequest();
+        Files.walkFileTree(startPath, new SimpleFileVisitor<Path>() {
 
-		        			if(!doc.isEncrypted()) {
-		        				PDFTextStripperByArea stripper = new PDFTextStripperByArea();
-		        				stripper.setSortByPosition(true);
+        	@Override
+        	public FileVisitResult visitFile(Path filePath, BasicFileAttributes bfa) throws IOException{
+        		File file = filePath.toFile();
+        		if(filter.accept(file)) {
+        			try {
+	        			PDDocument doc = PDDocument.load(file);
 
-		        				PDFTextStripper tStripper = new PDFTextStripper();
+	        			if(!doc.isEncrypted()) {
+	        				PDFTextStripperByArea stripper = new PDFTextStripperByArea();
+	        				stripper.setSortByPosition(true);
 
-		        				String text = tStripper.getText(doc);
-		        				System.out.println("=====");
-		        				System.out.println(file.getAbsolutePath());
-		        				
-								indexDoc(bulkRequest, file, text);
+	        				PDFTextStripper tStripper = new PDFTextStripper();
 
-		        			}
-		        			doc.close();
-		        		} catch(IOException ioe) {
-		        			ioe.printStackTrace();
-		        		}
+	        				String text = tStripper.getText(doc);
+	        				System.out.println("=====");
+	        				System.out.println(file.getAbsolutePath());
+	        				
+							indexDoc(bulkRequest, file, text);
+
+	        			}
+	        			doc.close();
+	        		} catch(IOException ioe) {
+	        			ioe.printStackTrace();
 	        		}
-	        		return FileVisitResult.CONTINUE;
-	        	}
+        		}
+        		return FileVisitResult.CONTINUE;
+        	}
 
-	        });
-	        BulkResponse bulkResponse = client.bulk(bulkRequest, RequestOptions.DEFAULT);
-	        printBulkResponseDetails(bulkResponse);
-	        searchFor(AskUser.askSearchTerm());
+        });
+        BulkResponse bulkResponse = client.bulk(bulkRequest, RequestOptions.DEFAULT);
+        printBulkResponseDetails(bulkResponse);
+	}
+
+    public static void main( String[] args ) {
+    	ExecutionMode mode = ExecutionMode.BOTH;
+    	if(args.length > 0) { 
+    		mode = ExecutionMode.valueOf(args[0]);
+    	}
+    	try {
+    		if(mode != ExecutionMode.SEARCH) {
+	    		Path startPath = FileSystems.getDefault().getPath("..","gros_backup");
+	    		launchDirectoryChooserFrame();
+	    	}
+	    	if(mode != ExecutionMode.INDEX) {
+	        	searchFor(AskUser.askSearchTerm());
+	    	}
 	        client.close();
 	    } catch(IOException ioe) {
 	    	ioe.printStackTrace();
